@@ -1,0 +1,1 @@
+# Hatogaya_git_control
