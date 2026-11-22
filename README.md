@@ -1,6 +1,6 @@
 # 🗂️ Hatogaya_git_control — hatogayait-AX リポジトリ管理
 
-> 最終更新: 2026-11-22 03:17 UTC | 合計: 24件
+> 最終更新: 2026-11-22 06:07 UTC | 合計: 29件
 
 全リポジトリの一覧・管理ツールをまとめたハブリポジトリ。**このREADMEは毎週月曜日に自動更新されます。**
 
@@ -18,13 +18,17 @@
 
 ---
 
-## リポジトリ一覧 (24件)
+## リポジトリ一覧 (29件)
 
 ### 🏥 Hatogaya系
 
 | リポジトリ | 公開 | アーカイブ | 説明 | 最終更新 | リンク |
 |-----------|------|-----------|------|----------|--------|
-| Hatogaya_git_control | 🔒 | ✅ | — | 2026-11-22 | [link](https://github.com/hatogayait-AX/Hatogaya_git_control) |
+| Hatogaya_cloud_cost_monitoring_product | 🌐 | ✅ | — | 2026-11-22 | [link](https://github.com/hatogayait-AX/Hatogaya_cloud_cost_monitoring_product) |
+| Hatogaya_git_control | 🌐 | ✅ | hatogayait-AX 全リポジトリ一括管理ハブ — GitHub Actions で README を毎週自動更新 | 2026-11-22 | [link](https://github.com/hatogayait-AX/Hatogaya_git_control) |
+| Scrap_medical_job_detail_task | 🔒 | ✅ | job-medley.com から医療系求人データをスクレイピングし Excel に整形するパイプライン（埼玉・東京 / 医師・看護師・PT・OT・ST・薬剤師・訪問看護） | 2026-11-22 | [link](https://github.com/hatogayait-AX/Scrap_medical_job_detail_task) |
+| Medical_information_task | 🌐 | ✅ | medical-rag-db: ICD-10・DPC・PMDA添付文書を事前埋め込み済みSQLite(rag.db)にまとめ、medical-ai-appから完全オフラインでRAG検索するための医療知識ベース構築パイプライン | 2026-11-22 | [link](https://github.com/hatogayait-AX/Medical_information_task) |
+| saitama-hospital-info-collector | 🔒 | ✅ | 埼玉県の在宅療養支援診療所・病院データをJMAPから収集し、Gemini APIで要約・特徴タグ付けするパイプライン。 | 2026-11-22 | [link](https://github.com/hatogayait-AX/saitama-hospital-info-collector) |
 | Hospital_input_video_page | 🔒 | ✅ | はとがや病院 電子資料・同意書システム — 入院資料PDF閲覧・オンライン同意書（住所・電話番号収集、署名不要）・管理画面。Firebase Hosting + Firestore + GitHub Actions。 | 2026-11-22 | [link](https://github.com/hatogayait-AX/Hospital_input_video_page) |
 | hospital-signage-product | 🔒 | ✅ | 診察の呼出し状況をリアルタイム表示する、病院向け受付・サイネージシステム。 | 2026-11-22 | [link](https://github.com/hatogayait-AX/hospital-signage-product) |
 | hatogaya-data-hub-product | 🔒 | ✅ | 鳩ヶ谷 統合ハブ - シフトマネージャー/jinjer/タレントマネジメント間のデータ連携を集約するFirebase製統合ハブ(MVP開発中) | 2026-11-22 | [link](https://github.com/hatogayait-AX/hatogaya-data-hub-product) |
@@ -41,7 +45,6 @@
 | hatogaya_jotform_product | 🔒 | ✅ | はとがや病院 患者満足度調査フォーム | 2026-10-13 | [link](https://github.com/hatogayait-AX/hatogaya_jotform_product) |
 | hatogaya_jobhunting | 🔒 | ✅ | 医療法人あかつき会（はとがや病院）採用サイト＆人事向け応募者管理システム（Next.js + Supabase） | 2026-10-13 | [link](https://github.com/hatogayait-AX/hatogaya_jobhunting) |
 | Hatogaya_talent_management | 🔒 | ✅ | jinjer × Claude APIで構築した人材管理システム。 | 2026-10-13 | [link](https://github.com/hatogayait-AX/Hatogaya_talent_management) |
-| Hatogaya_product_control_product | 🔒 | ✅ | — | 2026-09-02 | [link](https://github.com/hatogayait-AX/Hatogaya_product_control_product) |
 
 ### 🏢 クリニック・法人HP系
 
@@ -50,19 +53,21 @@
 | Negishi_homecare_HP | 🔒 | ✅ | 介護老人保健施設「老健ねぎしケアセンター」公式サイト（Firebase Hosting + Cloud Functions） | 2026-11-22 | [link](https://github.com/hatogayait-AX/Negishi_homecare_HP) |
 | azuma-visit-clinic-hp | 🔒 | ✅ | あずま在宅クリニック（はとがや病院グループ）公式サイト｜Next.js 15 + microCMS、Firebase Hosting で公開 | 2026-11-22 | [link](https://github.com/hatogayait-AX/azuma-visit-clinic-hp) |
 
-### 📦 その他
-
-| リポジトリ | 公開 | アーカイブ | 説明 | 最終更新 | リンク |
-|-----------|------|-----------|------|----------|--------|
-| azuma-jotform | 🔒 | ✅ | Firebase Hosting上で公開している、患者向けの満足度調査フォーム。 | 2026-11-22 | [link](https://github.com/hatogayait-AX/azuma-jotform) |
-| negishi_survey | 🔒 | ✅ | 老健ねぎしケアセンター 利用者満足度調査フォーム。回答はGoogle Apps Script経由でスプレッドシートへ保存。総合評価4以上でGoogleクチコミへ誘導。Firebase Hosting + 静的HTML/JS。 | 2026-11-22 | [link](https://github.com/hatogayait-AX/negishi_survey) |
-| LINE_WORKS_SUMMARY | 🔒 | ✅ | LINE WORKSのトーク履歴をGemini APIで要約し、指定チャンネルに投稿するツール。 | 2026-11-22 | [link](https://github.com/hatogayait-AX/LINE_WORKS_SUMMARY) |
-
 ### 🤖 AI・自動化系
 
 | リポジトリ | 公開 | アーカイブ | 説明 | 最終更新 | リンク |
 |-----------|------|-----------|------|----------|--------|
+| Google_comment_auto_reply_product | 🔒 | ✅ | 医療・介護施設（はとがや病院・老健ねぎしケアセンター・あずま在宅クリニック）のGoogle口コミに、毎日8〜19時の毎正時にGemini Proで返信案を作成し、メールの承認ボタンで投稿するボット（Cloud Run）＋返信用LLMの比較POC | 2026-11-22 | [link](https://github.com/hatogayait-AX/Google_comment_auto_reply_product) |
 | azuma_care_questionnaire_product | 🔒 | ✅ | あずま在宅クリニック｜ケアマネジャー向け匿名アンケートサイト（Firebase Hosting + Google Apps Script） | 2026-11-22 | [link](https://github.com/hatogayait-AX/azuma_care_questionnaire_product) |
+
+### 📦 その他
+
+| リポジトリ | 公開 | アーカイブ | 説明 | 最終更新 | リンク |
+|-----------|------|-----------|------|----------|--------|
+| Tokiwa_moneyforward_rpa_product | 🔒 | ✅ | マネーフォワード クラウドのAPIで仕訳帳CSV（会計）・請求書データを自動取得するスクリプト群 | 2026-11-22 | [link](https://github.com/hatogayait-AX/Tokiwa_moneyforward_rpa_product) |
+| azuma-jotform | 🔒 | ✅ | Firebase Hosting上で公開している、患者向けの満足度調査フォーム。 | 2026-11-22 | [link](https://github.com/hatogayait-AX/azuma-jotform) |
+| negishi_survey | 🔒 | ✅ | 老健ねぎしケアセンター 利用者満足度調査フォーム。回答はGoogle Apps Script経由でスプレッドシートへ保存。総合評価4以上でGoogleクチコミへ誘導。Firebase Hosting + 静的HTML/JS。 | 2026-11-22 | [link](https://github.com/hatogayait-AX/negishi_survey) |
+| LINE_WORKS_SUMMARY | 🔒 | ✅ | LINE WORKSのトーク履歴をGemini APIで要約し、指定チャンネルに投稿するツール。 | 2026-11-22 | [link](https://github.com/hatogayait-AX/LINE_WORKS_SUMMARY) |
 
 ---
 
