@@ -1,0 +1,556 @@
+<title>Repo Manager</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: full-height dashboard — header + filter bar + main (sidebar + table) */
+:root {
+  --bg: #f8f7f5;
+  --bg2: #ffffff;
+  --bg3: #f0eeeb;
+  --border: #e2ddd8;
+  --fg: #1a1816;
+  --fg2: #5c5650;
+  --fg3: #9b948c;
+  --accent: #2563eb;
+  --accent-bg: #eff4ff;
+  --green: #16a34a;
+  --green-bg: #f0fdf4;
+  --amber: #d97706;
+  --amber-bg: #fffbeb;
+  --red: #dc2626;
+  --red-bg: #fef2f2;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Inter', system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f0e0d; --bg2: #1a1917; --bg3: #242220; --border: #2e2b28;
+    --fg: #f0ece7; --fg2: #a8a09a; --fg3: #6b6460;
+    --accent: #60a5fa; --accent-bg: #172035;
+    --green: #4ade80; --green-bg: #052e16;
+    --amber: #fbbf24; --amber-bg: #1c1407;
+    --red: #f87171; --red-bg: #2a0a0a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f0e0d; --bg2: #1a1917; --bg3: #242220; --border: #2e2b28;
+  --fg: #f0ece7; --fg2: #a8a09a; --fg3: #6b6460;
+  --accent: #60a5fa; --accent-bg: #172035;
+  --green: #4ade80; --green-bg: #052e16;
+  --amber: #fbbf24; --amber-bg: #1c1407;
+  --red: #f87171; --red-bg: #2a0a0a;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--sans); font-size: 14px;
+  background: var(--bg); color: var(--fg);
+  display: flex; flex-direction: column;
+  padding-left: max(0px, env(safe-area-inset-left, 0px));
+  padding-right: max(0px, env(safe-area-inset-right, 0px));
+  overflow: hidden;
+}
+
+.header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  flex-shrink: 0; flex-wrap: wrap;
+}
+.header-logo { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px; color: var(--fg); white-space: nowrap; }
+.header-sep { flex: 1; min-width: 12px; }
+.auth-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.auth-row input, .auth-row select {
+  font-family: var(--sans); font-size: 13px; padding: 6px 10px;
+  border: 1px solid var(--border); border-radius: 6px;
+  background: var(--bg3); color: var(--fg); outline: none; transition: border-color .15s;
+}
+.auth-row input:focus, .auth-row select:focus { border-color: var(--accent); }
+.auth-row input[type="password"] { font-family: var(--mono); letter-spacing: .08em; width: 200px; }
+.auth-row input[type="text"] { width: 160px; }
+
+.btn {
+  font-family: var(--sans); font-size: 13px; font-weight: 500;
+  padding: 6px 12px; border-radius: 6px; border: 1px solid transparent;
+  cursor: pointer; transition: background .12s, border-color .12s, opacity .12s; white-space: nowrap;
+}
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-primary:hover:not(:disabled) { filter: brightness(1.1); }
+.btn-ghost { background: var(--bg3); color: var(--fg); border-color: var(--border); }
+.btn-ghost:hover:not(:disabled) { background: var(--border); }
+.btn-danger { background: var(--red-bg); color: var(--red); border-color: color-mix(in srgb, var(--red) 30%, transparent); }
+.btn-danger:hover:not(:disabled) { background: color-mix(in srgb, var(--red) 20%, transparent); }
+.btn-sm { padding: 4px 8px; font-size: 12px; }
+
+.filter-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  flex-shrink: 0; flex-wrap: wrap;
+}
+.search-wrap { position: relative; flex: 1; min-width: 160px; max-width: 320px; }
+.search-wrap svg { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--fg3); }
+.search-wrap input {
+  width: 100%; padding: 6px 10px 6px 30px;
+  font-family: var(--sans); font-size: 13px;
+  border: 1px solid var(--border); border-radius: 6px;
+  background: var(--bg3); color: var(--fg); outline: none; transition: border-color .15s;
+}
+.search-wrap input:focus { border-color: var(--accent); }
+.filter-chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.chip {
+  font-size: 12px; padding: 4px 10px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--bg3); color: var(--fg2);
+  cursor: pointer; transition: all .12s; user-select: none;
+}
+.chip.active { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); font-weight: 500; }
+.count-badge { font-size: 12px; color: var(--fg3); margin-left: auto; white-space: nowrap; }
+
+.main { display: flex; flex: 1; overflow: hidden; }
+.sidebar {
+  width: 240px; flex-shrink: 0; background: var(--bg2);
+  border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto;
+}
+.sidebar-section { padding: 16px; border-bottom: 1px solid var(--border); }
+.sidebar-title { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--fg3); margin-bottom: 10px; }
+.sel-count { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--accent); line-height: 1; margin-bottom: 2px; }
+.sel-label { font-size: 12px; color: var(--fg3); }
+.action-list { display: flex; flex-direction: column; gap: 6px; }
+.action-item { display: flex; flex-direction: column; gap: 6px; }
+.action-item label { font-size: 12px; color: var(--fg2); font-weight: 500; }
+.action-item input, .action-item select, .action-item textarea {
+  font-family: var(--sans); font-size: 12px; padding: 5px 8px;
+  border: 1px solid var(--border); border-radius: 5px;
+  background: var(--bg3); color: var(--fg); outline: none; resize: vertical;
+}
+.action-item input:focus, .action-item select:focus, .action-item textarea:focus { border-color: var(--accent); }
+.action-divider { height: 1px; background: var(--border); margin: 2px 0; }
+
+.table-wrap { flex: 1; overflow: auto; position: relative; }
+table { width: 100%; border-collapse: collapse; min-width: 600px; }
+thead th {
+  position: sticky; top: 0; background: var(--bg2); border-bottom: 1px solid var(--border);
+  padding: 9px 12px; text-align: left; font-size: 11px; font-weight: 600;
+  letter-spacing: .05em; text-transform: uppercase; color: var(--fg3); white-space: nowrap; z-index: 2;
+}
+thead th:first-child { width: 36px; padding-left: 16px; }
+tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+tbody tr:hover { background: var(--bg3); }
+tbody tr.selected { background: var(--accent-bg); }
+tbody tr.selected:hover { background: color-mix(in srgb, var(--accent-bg) 80%, var(--bg3)); }
+tbody td { padding: 10px 12px; vertical-align: middle; }
+tbody td:first-child { padding-left: 16px; }
+input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; }
+.repo-name { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--accent); text-decoration: none; }
+.repo-name:hover { text-decoration: underline; }
+.repo-desc { font-size: 12px; color: var(--fg2); max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.badge { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 500; padding: 2px 7px; border-radius: 10px; }
+.badge-private { background: var(--amber-bg); color: var(--amber); }
+.badge-public { background: var(--green-bg); color: var(--green); }
+.badge-archived { background: var(--bg3); color: var(--fg3); border: 1px solid var(--border); }
+.lang-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; flex-shrink: 0; }
+.date-cell { font-variant-numeric: tabular-nums; color: var(--fg2); font-size: 12px; white-space: nowrap; }
+.sort-btn { cursor: pointer; user-select: none; }
+.sort-btn:hover { color: var(--fg); }
+.sort-indicator { display: inline-block; margin-left: 2px; }
+
+.state-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 60px 20px; color: var(--fg3); text-align: center; min-height: 300px; }
+.state-screen p { font-size: 13px; max-width: 320px; }
+.spinner { width: 28px; height: 28px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+#toast-container { position: fixed; bottom: max(20px, env(safe-area-inset-bottom, 0px)); right: max(20px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 8px; z-index: 100; }
+.toast { font-size: 13px; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg2); box-shadow: 0 4px 16px rgba(0,0,0,.12); animation: slideIn .2s ease; max-width: 300px; }
+.toast.success { border-color: var(--green); color: var(--green); }
+.toast.error { border-color: var(--red); color: var(--red); }
+.toast.info { color: var(--fg2); }
+@keyframes slideIn { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: translateX(0); } }
+
+.progress-bar-wrap { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+.progress-bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width .3s; }
+
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.dialog { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 20px; max-width: 380px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,.2); }
+.dialog h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+.dialog p { font-size: 13px; color: var(--fg2); margin-bottom: 16px; white-space: pre-wrap; }
+.dialog-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+@media (max-width: 700px) {
+  .sidebar { width: 100%; max-height: 240px; border-right: none; border-bottom: 1px solid var(--border); }
+  .main { flex-direction: column; }
+  .auth-row input[type="password"] { width: 150px; }
+}
+</style>
+
+<div class="header">
+  <div class="header-logo">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+    </svg>
+    Repo Manager — hatogayait-AX
+  </div>
+  <div class="header-sep"></div>
+  <div class="auth-row">
+    <input type="text" id="owner-input" placeholder="hatogayait-AX" value="hatogayait-AX" title="GitHub username or org">
+    <select id="owner-type">
+      <option value="users">User</option>
+      <option value="orgs">Org</option>
+    </select>
+    <input type="password" id="token-input" placeholder="GitHub PAT (ghp_…)" autocomplete="off">
+    <button class="btn btn-primary" id="load-btn">読み込む</button>
+  </div>
+</div>
+
+<div class="filter-bar" id="filter-bar" style="display:none">
+  <div class="search-wrap">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="search-input" placeholder="リポジトリ名・説明で検索…">
+  </div>
+  <div class="filter-chips">
+    <span class="chip active" data-filter="all">すべて</span>
+    <span class="chip" data-filter="public">Public</span>
+    <span class="chip" data-filter="private">Private</span>
+    <span class="chip" data-filter="archived">アーカイブ済</span>
+    <span class="chip" data-filter="active">アクティブ</span>
+  </div>
+  <span class="count-badge" id="count-badge"></span>
+  <button class="btn btn-ghost btn-sm" id="select-all-btn">全選択</button>
+</div>
+
+<div class="main">
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">選択中</div>
+      <div class="sel-count" id="sel-count">0</div>
+      <div class="sel-label">リポジトリ</div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">一括操作</div>
+      <div class="action-list">
+        <div class="action-item">
+          <label>アーカイブ状態</label>
+          <select id="bulk-archive">
+            <option value="">変更しない</option>
+            <option value="true">アーカイブ</option>
+            <option value="false">アーカイブ解除</option>
+          </select>
+        </div>
+        <div class="action-item">
+          <label>可視性</label>
+          <select id="bulk-visibility">
+            <option value="">変更しない</option>
+            <option value="private">Private</option>
+            <option value="public">Public</option>
+          </select>
+        </div>
+        <div class="action-divider"></div>
+        <div class="action-item">
+          <label>説明を上書き（空欄=変更なし）</label>
+          <textarea id="bulk-desc" rows="2" placeholder="説明文…"></textarea>
+        </div>
+        <div class="action-item">
+          <label>トピック追加（カンマ区切り）</label>
+          <input type="text" id="bulk-topics" placeholder="hatogaya,ax,prod">
+        </div>
+        <div class="action-divider"></div>
+        <button class="btn btn-primary" id="apply-btn" disabled>適用する</button>
+        <div id="progress-wrap" style="display:none">
+          <div style="font-size:11px;color:var(--fg3);margin-bottom:3px" id="progress-label"></div>
+          <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">統計</div>
+      <div id="stats-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="state-screen" id="welcome-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+      </svg>
+      <p>GitHub PAT を入力して「読み込む」を押してください。<br><small style="font-size:11px;color:var(--fg3)">トークンはブラウザメモリのみに保持されます</small></p>
+    </div>
+    <div class="state-screen" id="loading-state" style="display:none">
+      <div class="spinner"></div>
+      <p>リポジトリを読み込んでいます…</p>
+    </div>
+    <table id="repo-table" style="display:none">
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="check-all"></th>
+          <th class="sort-btn" data-col="name">リポジトリ名 <span class="sort-indicator"></span></th>
+          <th>説明</th>
+          <th class="sort-btn" data-col="visibility">可視性 <span class="sort-indicator"></span></th>
+          <th class="sort-btn" data-col="language">言語 <span class="sort-indicator"></span></th>
+          <th class="sort-btn" data-col="stars">Stars <span class="sort-indicator"></span></th>
+          <th class="sort-btn" data-col="pushed">更新日 <span class="sort-indicator"></span></th>
+        </tr>
+      </thead>
+      <tbody id="repo-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<div id="confirm-overlay" class="overlay" style="display:none">
+  <div class="dialog">
+    <h3 id="confirm-title"></h3>
+    <p id="confirm-body"></p>
+    <div class="dialog-actions">
+      <button class="btn btn-ghost" id="confirm-cancel">キャンセル</button>
+      <button class="btn btn-danger" id="confirm-ok">実行する</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const LANG_COLORS = {
+  JavaScript:'#f1e05a',TypeScript:'#3178c6',Python:'#3572A5',Ruby:'#701516',
+  Go:'#00ADD8',Rust:'#dea584',Java:'#b07219',Kotlin:'#A97BFF',Swift:'#F05138',
+  'C#':'#178600','C++':'#f34b7d',C:'#555555',PHP:'#4F5D95',Shell:'#89e051',
+  HTML:'#e34c26',CSS:'#563d7c',Dart:'#00B4AB',Vue:'#41b883',
+};
+
+let allRepos = [], filteredRepos = [], selectedIds = new Set();
+let sortCol = 'pushed', sortDir = -1, activeFilter = 'all';
+const $ = id => document.getElementById(id);
+
+function getToken() {
+  const inp = $('token-input').value.trim();
+  if (inp) { try { sessionStorage.setItem('gh_token_tmp', inp); } catch{} return inp; }
+  try { return sessionStorage.getItem('gh_token_tmp') || ''; } catch { return ''; }
+}
+
+async function ghFetch(path, opts={}) {
+  const token = getToken();
+  const res = await fetch('https://api.github.com' + path, {
+    ...opts,
+    headers: {
+      'Authorization': token ? `Bearer ${token}` : '',
+      'Accept': 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      ...(opts.headers||{}),
+    },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({message: res.statusText}));
+    throw new Error(err.message || res.statusText);
+  }
+  return res.json();
+}
+
+async function loadRepos() {
+  const owner = $('owner-input').value.trim() || 'hatogayait-AX';
+  const type = $('owner-type').value;
+  if (!getToken()) { toast('PAT を入力してください', 'error'); return; }
+  $('welcome-state').style.display = 'none';
+  $('loading-state').style.display = 'flex';
+  $('repo-table').style.display = 'none';
+  $('filter-bar').style.display = 'none';
+  try {
+    let repos = [], page = 1;
+    while (true) {
+      const batch = await ghFetch(`/${type}/${owner}/repos?per_page=100&page=${page}&type=all`);
+      repos = repos.concat(batch);
+      if (batch.length < 100) break;
+      page++;
+    }
+    allRepos = repos; selectedIds.clear();
+    updateStats(); applyFilter();
+    $('loading-state').style.display = 'none';
+    $('repo-table').style.display = '';
+    $('filter-bar').style.display = 'flex';
+    toast(`${repos.length}件読み込みました`, 'success');
+  } catch(e) {
+    $('loading-state').style.display = 'none';
+    $('welcome-state').style.display = 'flex';
+    $('welcome-state').querySelector('p').textContent = `エラー: ${e.message}`;
+    toast(e.message, 'error');
+  }
+}
+
+function updateStats() {
+  const pub = allRepos.filter(r=>!r.private).length;
+  const priv = allRepos.filter(r=>r.private).length;
+  const arch = allRepos.filter(r=>r.archived).length;
+  const stars = allRepos.reduce((s,r)=>s+(r.stargazers_count||0),0);
+  $('stats-grid').innerHTML = `
+    <div style="text-align:center"><div style="font-size:18px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--green)">${pub}</div><div style="font-size:11px;color:var(--fg3)">Public</div></div>
+    <div style="text-align:center"><div style="font-size:18px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--amber)">${priv}</div><div style="font-size:11px;color:var(--fg3)">Private</div></div>
+    <div style="text-align:center"><div style="font-size:18px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--fg2)">${arch}</div><div style="font-size:11px;color:var(--fg3)">Archived</div></div>
+    <div style="text-align:center"><div style="font-size:18px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--fg)">${stars}</div><div style="font-size:11px;color:var(--fg3)">Stars</div></div>`;
+}
+
+function applyFilter() {
+  const q = $('search-input').value.toLowerCase();
+  filteredRepos = allRepos.filter(r => {
+    if (activeFilter==='public' && r.private) return false;
+    if (activeFilter==='private' && !r.private) return false;
+    if (activeFilter==='archived' && !r.archived) return false;
+    if (activeFilter==='active' && r.archived) return false;
+    if (q && !r.name.toLowerCase().includes(q) && !(r.description||'').toLowerCase().includes(q)) return false;
+    return true;
+  });
+  sortRepos(); renderTable();
+  $('count-badge').textContent = `${filteredRepos.length} / ${allRepos.length}`;
+}
+
+function sortRepos() {
+  filteredRepos.sort((a,b) => {
+    let av, bv;
+    if (sortCol==='name') { av=a.name.toLowerCase(); bv=b.name.toLowerCase(); }
+    else if (sortCol==='visibility') { av=a.private?1:0; bv=b.private?1:0; }
+    else if (sortCol==='language') { av=(a.language||'').toLowerCase(); bv=(b.language||'').toLowerCase(); }
+    else if (sortCol==='stars') { av=a.stargazers_count||0; bv=b.stargazers_count||0; }
+    else { av=new Date(a.pushed_at||0).getTime(); bv=new Date(b.pushed_at||0).getTime(); }
+    return av<bv ? -sortDir : av>bv ? sortDir : 0;
+  });
+  document.querySelectorAll('.sort-indicator').forEach(el=>el.textContent='');
+  const th = document.querySelector(`[data-col="${sortCol}"] .sort-indicator`);
+  if (th) th.textContent = sortDir===1 ? ' ↑' : ' ↓';
+}
+
+function renderTable() {
+  const tbody = $('repo-tbody');
+  tbody.innerHTML = '';
+  for (const r of filteredRepos) {
+    const tr = document.createElement('tr');
+    if (selectedIds.has(r.id)) tr.classList.add('selected');
+    const lang = r.language||'';
+    const color = LANG_COLORS[lang]||'#aaa';
+    const pushed = r.pushed_at ? new Date(r.pushed_at).toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}) : '—';
+    tr.innerHTML = `
+      <td><input type="checkbox" data-id="${r.id}" ${selectedIds.has(r.id)?'checked':''}></td>
+      <td><a class="repo-name" href="${r.html_url}" target="_blank" rel="noopener">${r.name}</a>${r.archived?'<span class="badge badge-archived" style="margin-left:4px">archived</span>':''}</td>
+      <td><div class="repo-desc" title="${(r.description||'').replace(/"/g,'&quot;')}">${r.description||'<span style="color:var(--fg3)">—</span>'}</div></td>
+      <td><span class="badge ${r.private?'badge-private':'badge-public'}">${r.private?'Private':'Public'}</span></td>
+      <td style="white-space:nowrap">${lang?`<span class="lang-dot" style="background:${color}"></span>${lang}`:'—'}</td>
+      <td style="font-variant-numeric:tabular-nums;color:var(--fg2)">${r.stargazers_count||0}</td>
+      <td class="date-cell">${pushed}</td>`;
+    tbody.appendChild(tr);
+  }
+  updateSelCount();
+}
+
+function updateSelCount() {
+  $('sel-count').textContent = selectedIds.size;
+  $('apply-btn').disabled = selectedIds.size === 0;
+  const isAll = filteredRepos.length > 0 && filteredRepos.every(r=>selectedIds.has(r.id));
+  $('check-all').indeterminate = !isAll && selectedIds.size>0 && filteredRepos.some(r=>selectedIds.has(r.id));
+  $('check-all').checked = isAll;
+}
+
+$('repo-tbody').addEventListener('change', e => {
+  if (e.target.type !== 'checkbox') return;
+  const id = parseInt(e.target.dataset.id);
+  if (e.target.checked) selectedIds.add(id); else selectedIds.delete(id);
+  e.target.closest('tr').classList.toggle('selected', e.target.checked);
+  updateSelCount();
+});
+$('check-all').addEventListener('change', e => {
+  filteredRepos.forEach(r => { if(e.target.checked) selectedIds.add(r.id); else selectedIds.delete(r.id); });
+  renderTable();
+});
+$('select-all-btn').addEventListener('click', () => {
+  const allSel = filteredRepos.every(r=>selectedIds.has(r.id));
+  filteredRepos.forEach(r => { if(allSel) selectedIds.delete(r.id); else selectedIds.add(r.id); });
+  renderTable();
+  $('select-all-btn').textContent = allSel ? '全選択' : '全解除';
+});
+document.querySelectorAll('.sort-btn').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (sortCol===col) sortDir*=-1; else { sortCol=col; sortDir=-1; }
+    sortRepos(); renderTable();
+  });
+});
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    activeFilter = chip.dataset.filter;
+    applyFilter();
+  });
+});
+$('search-input').addEventListener('input', applyFilter);
+$('load-btn').addEventListener('click', loadRepos);
+$('token-input').addEventListener('keydown', e => { if(e.key==='Enter') loadRepos(); });
+
+$('apply-btn').addEventListener('click', () => {
+  const archVal = $('bulk-archive').value, visVal = $('bulk-visibility').value;
+  const descVal = $('bulk-desc').value.trim(), topicsVal = $('bulk-topics').value.trim();
+  if (!archVal && !visVal && !descVal && !topicsVal) { toast('操作を選択してください', 'error'); return; }
+  const names = allRepos.filter(r=>selectedIds.has(r.id)).map(r=>r.name);
+  const lines = [];
+  if (archVal) lines.push(`アーカイブ: ${archVal==='true'?'ON':'OFF'}`);
+  if (visVal) lines.push(`可視性: ${visVal}`);
+  if (descVal) lines.push('説明を上書き');
+  if (topicsVal) lines.push(`トピック追加: ${topicsVal}`);
+  showConfirm(`${names.length}件に一括適用`,
+    `以下の操作を ${names.length} 件のリポジトリに適用します:\n${lines.join(', ')}\n\n対象: ${names.slice(0,5).join(', ')}${names.length>5?` ほか ${names.length-5}件`:''}`,
+    () => runBulk(archVal, visVal, descVal, topicsVal));
+});
+
+async function runBulk(archVal, visVal, descVal, topicsVal) {
+  const owner = $('owner-input').value.trim() || 'hatogayait-AX';
+  const targets = allRepos.filter(r=>selectedIds.has(r.id));
+  $('progress-wrap').style.display = ''; $('apply-btn').disabled = true;
+  let done = 0, errors = [];
+  const addTopics = topicsVal ? topicsVal.split(',').map(t=>t.trim().toLowerCase()).filter(Boolean) : [];
+  await Promise.allSettled(targets.map(async repo => {
+    try {
+      const body = {};
+      if (archVal) body.archived = archVal==='true';
+      if (visVal) body.private = visVal==='private';
+      if (descVal) body.description = descVal;
+      if (Object.keys(body).length) await ghFetch(`/repos/${owner}/${repo.name}`, {method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if (addTopics.length) {
+        const merged = [...new Set([...(repo.topics||[]),...addTopics])];
+        await ghFetch(`/repos/${owner}/${repo.name}/topics`, {method:'PUT',headers:{'Content-Type':'application/json','Accept':'application/vnd.github.mercy-preview+json'},body:JSON.stringify({names:merged})});
+      }
+      const idx = allRepos.findIndex(r=>r.id===repo.id);
+      if (idx>=0) {
+        if (archVal) allRepos[idx].archived = archVal==='true';
+        if (visVal) allRepos[idx].private = visVal==='private';
+        if (descVal) allRepos[idx].description = descVal;
+        if (addTopics.length) allRepos[idx].topics = [...new Set([...(allRepos[idx].topics||[]),...addTopics])];
+      }
+    } catch(e) { errors.push(`${repo.name}: ${e.message}`); }
+    done++;
+    $('progress-bar').style.width = `${(done/targets.length*100).toFixed(0)}%`;
+    $('progress-label').textContent = `${done} / ${targets.length}`;
+  }));
+  setTimeout(()=>{ $('progress-wrap').style.display='none'; $('progress-bar').style.width='0%'; },1500);
+  $('apply-btn').disabled = false;
+  if (errors.length) { toast(`${errors.length}件でエラー発生`,'error'); errors.slice(0,3).forEach(e=>toast(e,'error')); }
+  else toast(`${targets.length}件に適用しました`,'success');
+  $('bulk-archive').value=''; $('bulk-visibility').value=''; $('bulk-desc').value=''; $('bulk-topics').value='';
+  updateStats(); applyFilter();
+}
+
+let confirmCb = null;
+function showConfirm(title, body, cb) {
+  $('confirm-title').textContent = title; $('confirm-body').textContent = body;
+  $('confirm-overlay').style.display = 'flex'; confirmCb = cb;
+}
+$('confirm-ok').addEventListener('click', () => { $('confirm-overlay').style.display='none'; if(confirmCb){confirmCb();confirmCb=null;} });
+$('confirm-cancel').addEventListener('click', () => { $('confirm-overlay').style.display='none'; confirmCb=null; });
+
+function toast(msg, type='info') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`; el.textContent = msg;
+  $('toast-container').appendChild(el);
+  setTimeout(()=>el.remove(), 4000);
+}
+try { const s = sessionStorage.getItem('gh_token_tmp'); if(s) $('token-input').value=s; } catch{}
+</script>

@@ -1,0 +1,111 @@
+name: Update README
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'  # 毎週月曜0時（UTC）に自動実行
+  workflow_dispatch:       # 手動実行も可能
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 全リポジトリ取得 & README生成
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          gh repo list hatogayait-AX --limit 200 --json name,description,url,updatedAt,isPrivate,isArchived,primaryLanguage > /tmp/repos.json
+
+          python3 << 'PYEOF'
+          import json
+          from datetime import datetime
+
+          with open('/tmp/repos.json') as f:
+              repos = json.load(f)
+
+          categories = {
+              "🏥 Hatogaya系": ["hatogaya", "hospital", "shift", "medical"],
+              "🏢 クリニック・法人HP系": ["clinic", "homecare", "healthcare"],
+              "🤖 AI・自動化系": ["ai", "auto", "bot", "llm", "gpt", "claude"],
+              "📊 データ・分析系": ["data", "etl", "analytics", "report"],
+              "🌐 Web・フロントエンド系": ["web", "hp", "page", "site", "frontend"],
+              "🔧 ツール・管理系": ["tool", "control", "manager", "script", "util"],
+          }
+
+          def get_category(name):
+              for cat, keywords in categories.items():
+                  for kw in keywords:
+                      if kw.lower() in name.lower():
+                          return cat
+              return "📦 その他"
+
+          grouped = {}
+          for repo in repos:
+              cat = get_category(repo['name'])
+              grouped.setdefault(cat, []).append(repo)
+
+          now = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
+          total = len(repos)
+
+          lines = []
+          lines.append("# 🗂️ Hatogaya_git_control — hatogayait-AX リポジトリ管理")
+          lines.append("")
+          lines.append(f"> 最終更新: {now} | 合計: {total}件")
+          lines.append("")
+          lines.append("全リポジトリの一覧・管理ツールをまとめたハブリポジトリ。**このREADMEは毎週月曜日に自動更新されます。**")
+          lines.append("")
+          lines.append("---")
+          lines.append("")
+          lines.append("## 使い方")
+          lines.append("")
+          lines.append("ブラウザで `repo-manager.html` を開き、GitHub PAT を入力してリポジトリを一括管理できます。")
+          lines.append("")
+          lines.append("### 一括操作できること")
+          lines.append("- アーカイブ / アーカイブ解除")
+          lines.append("- 可視性変更（Public / Private）")
+          lines.append("- 説明文の一括上書き")
+          lines.append("- トピックの一括追加")
+          lines.append("")
+          lines.append("---")
+          lines.append("")
+          lines.append(f"## リポジトリ一覧 ({total}件)")
+
+          for cat, cat_repos in grouped.items():
+              lines.append("")
+              lines.append(f"### {cat}")
+              lines.append("")
+              lines.append("| リポジトリ | 公開 | アーカイブ | 説明 | 最終更新 | リンク |")
+              lines.append("|-----------|------|-----------|------|----------|--------|")
+              for r in sorted(cat_repos, key=lambda x: x['updatedAt'], reverse=True):
+                  priv = "🔒" if r['isPrivate'] else "🌐"
+                  arch = "📦" if r.get('isArchived') else "✅"
+                  desc = r['description'] or "—"
+                  updated = r['updatedAt'][:10]
+                  lines.append(f"| {r['name']} | {priv} | {arch} | {desc} | {updated} | [link]({r['url']}) |")
+
+          lines.append("")
+          lines.append("---")
+          lines.append("")
+          lines.append("🔒 = プライベート　🌐 = パブリック　✅ = アクティブ　📦 = アーカイブ済")
+
+          with open('README.md', 'w') as f:
+              f.write('\n'.join(lines) + '\n')
+
+          print(f"✅ README生成完了: {total}件")
+          PYEOF
+
+      - name: 変更があればcommit & push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          if git diff --staged --quiet; then
+            echo "変更なし — スキップ"
+          else
+            git commit -m "chore: README自動更新 $(date -u +%Y-%m-%d)"
+            git push
+          fi
