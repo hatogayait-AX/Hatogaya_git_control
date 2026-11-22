@@ -1,6 +1,6 @@
 # 🗂️ Hatogaya_git_control — hatogayait-AX リポジトリ管理
 
-> 最終更新: 2026-11-22 06:07 UTC | 合計: 29件
+> 最終更新: 2026-11-22 11:09 UTC | 合計: 29件
 
 全リポジトリの一覧・管理ツールをまとめたハブリポジトリ。**このREADMEは毎週月曜日に自動更新されます。**
 
@@ -24,7 +24,7 @@
 
 | リポジトリ | 公開 | アーカイブ | 説明 | 最終更新 | リンク |
 |-----------|------|-----------|------|----------|--------|
-| Hatogaya_cloud_cost_monitoring_product | 🌐 | ✅ | — | 2026-11-22 | [link](https://github.com/hatogayait-AX/Hatogaya_cloud_cost_monitoring_product) |
+| Hatogaya_cloud_cost_monitoring_product | 🔒 | ✅ | はとがや（hatogaya1890it）GCP プロジェクトのクラウドコスト監視ダッシュボード | BigQuery Billing Export → Firestore → Firebase Hosting | 2026-11-22 | [link](https://github.com/hatogayait-AX/Hatogaya_cloud_cost_monitoring_product) |
 | Hatogaya_git_control | 🌐 | ✅ | hatogayait-AX 全リポジトリ一括管理ハブ — GitHub Actions で README を毎週自動更新 | 2026-11-22 | [link](https://github.com/hatogayait-AX/Hatogaya_git_control) |
 | Scrap_medical_job_detail_task | 🔒 | ✅ | job-medley.com から医療系求人データをスクレイピングし Excel に整形するパイプライン（埼玉・東京 / 医師・看護師・PT・OT・ST・薬剤師・訪問看護） | 2026-11-22 | [link](https://github.com/hatogayait-AX/Scrap_medical_job_detail_task) |
 | Medical_information_task | 🌐 | ✅ | medical-rag-db: ICD-10・DPC・PMDA添付文書を事前埋め込み済みSQLite(rag.db)にまとめ、medical-ai-appから完全オフラインでRAG検索するための医療知識ベース構築パイプライン | 2026-11-22 | [link](https://github.com/hatogayait-AX/Medical_information_task) |
